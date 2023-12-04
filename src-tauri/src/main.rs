@@ -30,6 +30,11 @@ async fn load_dataset(path: String) {
                     .or_insert_with(HashMap::new)
                     .entry(to)
                     .or_insert(1);
+                sparse_matrix
+                    .entry(to)
+                    .or_insert_with(HashMap::new)
+                    .entry(from)
+                    .or_insert(1);
             }
         }
     }
