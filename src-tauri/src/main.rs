@@ -71,6 +71,18 @@ async fn get_max_cm_ng() -> usize {
     functions::get_max_cm_ng(&sparse_matrix)
 }
 
+#[tauri::command]
+async fn get_dg_dis() -> Vec<(usize, usize)> {
+    let sparse_matrix = STATE.lock().unwrap();
+    functions::get_dg_dis(&sparse_matrix)
+}
+
+#[tauri::command]
+async fn get_cl_ef_dis() -> Vec<(usize, f64)> {
+    let sparse_matrix = STATE.lock().unwrap();
+    functions::get_cl_ef_dis(&sparse_matrix)
+}
+
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
@@ -80,6 +92,8 @@ fn main() {
             get_cl_ef,
             get_avg_cm_nb,
             get_max_cm_ng,
+            get_dg_dis,
+            get_cl_ef_dis,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

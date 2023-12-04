@@ -59,10 +59,10 @@
     "windows": [
       {
         "fullscreen": false,
-        "height": 600,
+        "height": 1080,
         "resizable": true,
         "title": "Tauri Network Analyzer",
-        "width": 800
+        "width": 1920
       }
     ]
   }
