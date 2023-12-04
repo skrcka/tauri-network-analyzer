@@ -1,5 +1,8 @@
-use rayon::prelude::{IntoParallelIterator, ParallelBridge, ParallelIterator};
-use rayon_hash::HashMap;
+use rayon::{
+    iter::IntoParallelRefIterator,
+    prelude::{IntoParallelIterator, ParallelBridge, ParallelIterator},
+};
+use rayon_hash::{HashMap, HashSet};
 
 pub fn get_avg_dg(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) -> f64 {
     let start = std::time::Instant::now();
@@ -18,7 +21,7 @@ pub fn get_avg_dg(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) -> f64 
 pub fn get_max_dg(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) -> usize {
     let start = std::time::Instant::now();
     let max_degree: usize = sparse_matrix
-        .into_iter()
+        .par_iter()
         .map(|(_, v)| v.len())
         .max()
         .unwrap();
@@ -36,7 +39,7 @@ pub fn get_dg_dis(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) -> Vec<
     let mut degree_distribution: HashMap<usize, usize> = HashMap::new();
     let degree_distribution_arc =
         std::sync::Arc::new(std::sync::Mutex::new(&mut degree_distribution));
-    sparse_matrix.into_iter().for_each(|(_, v)| {
+    sparse_matrix.par_iter().for_each(|(_, v)| {
         degree_distribution_arc
             .lock()
             .unwrap()
@@ -112,7 +115,7 @@ pub fn get_cl_ef_dis(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) -> V
     let start = std::time::Instant::now();
 
     let coefficients: HashMap<usize, f64> = sparse_matrix
-        .into_iter()
+        .par_iter()
         .map(|(&node, _)| (node, get_cl_coef(sparse_matrix, node)))
         .collect();
 
@@ -149,7 +152,7 @@ pub fn get_cl_ds(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) -> HashM
     let mut clustering_distribution: HashMap<usize, usize> = HashMap::new();
     let sparse_matrix_copy = sparse_matrix.clone();
     let results: Vec<HashMap<usize, usize>> = sparse_matrix_copy
-        .into_iter()
+        .par_iter()
         .map(|(_, neighbors)| {
             let mut local_distribution: HashMap<usize, usize> = HashMap::new();
             let mut count = 0;
@@ -188,26 +191,33 @@ pub fn get_cl_ds(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) -> HashM
 }
 
 pub fn get_avg_cm_nb(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) -> f64 {
-    let sparse_matrix_copy = sparse_matrix.clone();
     let start = std::time::Instant::now();
-    let sum: usize = sparse_matrix_copy
-        .into_iter()
-        .map(|(_, neighbors)| {
-            let mut count = 0;
-            for neighbor in neighbors.keys() {
-                if !sparse_matrix.contains_key(neighbor) {
-                    continue;
-                }
-                for neighbor_neighbor in sparse_matrix.get(neighbor).unwrap().keys() {
-                    if neighbors.contains_key(neighbor_neighbor) {
-                        count += 1;
-                    }
-                }
+    let (total_common, total_pairs) = sparse_matrix
+        .par_iter()
+        .map(|(_, neighbors1)| {
+            let mut common_neighbors_count = 0;
+            let mut total_pairs_count = 0;
+
+            for (_, neighbors2) in sparse_matrix.iter() {
+                let common_neighbors: HashSet<_> = neighbors1
+                    .keys()
+                    .filter(|&&x| neighbors2.contains_key(&x))
+                    .collect();
+                common_neighbors_count += common_neighbors.len();
+                total_pairs_count += 1;
             }
-            count
+
+            (common_neighbors_count, total_pairs_count)
         })
-        .sum();
-    let avg_common_neighbors = sum as f64 / sparse_matrix.len() as f64;
+        .reduce(
+            || (0, 0),
+            |acc, (common, count)| (acc.0 + common, acc.1 + count),
+        );
+
+    let mut avg_common_neighbors = 0.0;
+    if total_pairs != 0 {
+        avg_common_neighbors = total_common as f64 / total_pairs as f64;
+    }
     let end = std::time::Instant::now();
     println!(
         "Average common neighbors par: {} in {}",
@@ -219,29 +229,32 @@ pub fn get_avg_cm_nb(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) -> f
 
 pub fn get_max_cm_ng(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) -> usize {
     let start = std::time::Instant::now();
-    let max = sparse_matrix
-        .into_iter()
-        .map(|(_, neighbors)| {
-            let mut count = 0;
-            for neighbor in neighbors.keys() {
-                if !sparse_matrix.contains_key(neighbor) {
-                    continue;
-                }
-                for neighbor_neighbor in sparse_matrix.get(neighbor).unwrap().keys() {
-                    if neighbors.contains_key(neighbor_neighbor) {
-                        count += 1;
+    let max_common = sparse_matrix
+        .par_iter()
+        .map(|(node1, neighbors1)| {
+            sparse_matrix
+                .iter()
+                .map(|(node2, neighbors2)| {
+                    if node1 > node2 {
+                        return 0;
                     }
-                }
-            }
-            count
+                    let common_neighbors: HashSet<_> = neighbors1
+                        .keys()
+                        .filter(|&&x| neighbors2.contains_key(&x))
+                        .collect();
+                    common_neighbors.len()
+                })
+                .max()
+                .unwrap_or(0)
         })
         .max()
-        .unwrap();
+        .unwrap_or(0);
+
     let end = std::time::Instant::now();
     println!(
         "Maximum common neighbors par: {} in {}",
-        max,
+        max_common,
         (end - start).as_millis()
     );
-    max
+    max_common
 }
