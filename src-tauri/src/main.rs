@@ -83,6 +83,18 @@ async fn get_cl_ef_dis() -> Vec<(usize, f64)> {
     functions::get_cl_ef_dis(&sparse_matrix)
 }
 
+#[tauri::command]
+async fn get_node_count() -> usize {
+    let sparse_matrix = STATE.lock().unwrap();
+    functions::get_node_count(&sparse_matrix)
+}
+
+#[tauri::command]
+async fn get_edge_count() -> usize {
+    let sparse_matrix = STATE.lock().unwrap();
+    functions::get_edge_count(&sparse_matrix)
+}
+
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
@@ -94,6 +106,8 @@ fn main() {
             get_max_cm_ng,
             get_dg_dis,
             get_cl_ef_dis,
+            get_node_count,
+            get_edge_count,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

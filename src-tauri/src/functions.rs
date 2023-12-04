@@ -1,8 +1,33 @@
 use rayon::{
     iter::IntoParallelRefIterator,
-    prelude::{IntoParallelIterator, ParallelBridge, ParallelIterator},
+    prelude::{ParallelBridge, ParallelIterator},
 };
 use rayon_hash::{HashMap, HashSet};
+
+pub fn get_node_count(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) -> usize {
+    let start = std::time::Instant::now();
+    let node_count = sparse_matrix.len();
+    let end = std::time::Instant::now();
+    println!(
+        "Node count par: {} in {}",
+        node_count,
+        (end - start).as_millis()
+    );
+    node_count
+}
+
+pub fn get_edge_count(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) -> usize {
+    let start = std::time::Instant::now();
+    let mut edge_count: usize = sparse_matrix.par_iter().map(|(_, v)| v.len()).sum();
+    edge_count /= 2;
+    let end = std::time::Instant::now();
+    println!(
+        "Edge count par: {} in {}",
+        edge_count,
+        (end - start).as_millis()
+    );
+    edge_count
+}
 
 pub fn get_avg_dg(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) -> f64 {
     let start = std::time::Instant::now();

@@ -22,6 +22,18 @@ function App() {
         metrics,
         setMetrics,
     ] = useState<Metrics>({
+        nodes: {
+            name: 'Nodes',
+            status: Status.IDLE,
+            value: 0,
+            fetchUrl: 'get_node_count',
+        },
+        edges: {
+            name: 'Edges',
+            status: Status.IDLE,
+            value: 0,
+            fetchUrl: 'get_edge_count',
+        },
         max_dg: {
             name: 'Max degree',
             status: Status.IDLE,
