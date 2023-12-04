@@ -2,6 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod functions;
+mod path;
 
 use lazy_static::lazy_static;
 use rayon_hash::HashMap;
@@ -95,6 +96,13 @@ async fn get_edge_count() -> usize {
     functions::get_edge_count(&sparse_matrix)
 }
 
+#[tauri::command]
+async fn djikstra(start: usize, end: usize) -> Option<usize> {
+    println!("Djikstra");
+    let sparse_matrix = STATE.lock().unwrap();
+    path::dijkstra(&sparse_matrix, start, end)
+}
+
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
@@ -108,6 +116,7 @@ fn main() {
             get_cl_ef_dis,
             get_node_count,
             get_edge_count,
+            djikstra,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

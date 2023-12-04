@@ -1,5 +1,5 @@
 import './App.css';
-import {Container, Button, Spinner, Table, Row, Col} from 'reactstrap';
+import {Container, Button, Spinner, Table, Row, Col, Input} from 'reactstrap';
 import { invoke } from '@tauri-apps/api/tauri';
 import { open } from '@tauri-apps/api/dialog';
 
@@ -177,6 +177,40 @@ function App() {
         }
     }
 
+    const [
+        node1,
+        setNode1,
+    ] = useState<number>(0);
+
+    const [
+        node2,
+        setNode2,
+    ] = useState<number>(0);
+
+    const [
+        distance,
+        setDistance,
+    ] = useState<number>(0);
+
+    const [
+        distanceStatus,
+        setDistanceStatus,
+    ] = useState<Status>(Status.IDLE);
+
+    const fetchDistance = async () => {
+        try {
+            setDistanceStatus(Status.LOADING);
+            const value = await invoke('djikstra', {start: node1, end: node2});
+            const parsedValue = value as number;
+            console.log(value);
+            setDistance(parsedValue);
+            setDistanceStatus(Status.DONE);
+        } catch (e) {
+            console.error('Error calling Rust function', e);
+            setDistanceStatus(Status.ERROR);
+        }
+    }
+
     return (
         <div className='app p-3'>
         <Container className='mt-3 mb-3 d-flex flex-grow-1 flex-column'>
@@ -235,6 +269,47 @@ function App() {
                             <BarChart data={clEffectDistribution} />
                         }
                         </div>
+                    </Col>
+                </Row>
+                <Row className='w-100 mt-3' style={{height: '7rem'}}>
+                    <h2>Calculate distance of nodes</h2>
+                    <Col className='d-flex justify-content-center w-100'>
+                        <Input
+                            type="number"
+                            name="node1"
+                            id="node1"
+                            placeholder="Node 1"
+                            onChange={(evnt)=>{
+                                setDistanceStatus(Status.IDLE)
+                                setNode1(parseInt(evnt.target.value))
+                            }}
+                        />
+                    </Col>
+                    <Col className='d-flex justify-content-center w-100'>
+                        <Input
+                            type="number"
+                            name="node2"
+                            id="node2"
+                            placeholder="Node 2"
+                            onChange={(evnt)=>{
+                                setDistanceStatus(Status.IDLE)
+                                setNode2(parseInt(evnt.target.value))
+                            }}
+                        />
+                    </Col>
+                    <Col className='d-flex justify-content-center w-100'>
+                    {distanceStatus === Status.DONE && (
+                        <h3>Distance: {distance}</h3>
+                    )}
+                    {distanceStatus === Status.LOADING && (
+                        <Spinner color="primary" />
+                    )}
+                    {distanceStatus === Status.ERROR && (
+                        <p>Error</p>
+                    )}
+                    {distanceStatus === Status.IDLE && (
+                        <Button color="primary" onClick={fetchDistance}>Calculate</Button>
+                    )}
                     </Col>
                 </Row>
                 </div>
