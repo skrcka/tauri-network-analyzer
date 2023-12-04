@@ -67,9 +67,19 @@ function App() {
     });
 
     const [
+        dgDistributionLoading,
+        setDgDistributionLoading,
+    ] = useState<boolean>(false);
+
+    const [
         dgDistribution,
         setDgDistribution,
     ] = useState<Array<[number, number]>>([]);
+
+    const [
+        clEffectDistributionLoading,
+        setClEffectDistributionLoading,
+    ] = useState<boolean>(false);
 
     const [
         clEffectDistribution,
@@ -143,10 +153,12 @@ function App() {
 
     const fetchDgDistribution = async () => {
         try {
+            setDgDistributionLoading(true);
             const value = await invoke('get_dg_dis');
             const parsedValue = value as Array<[number, number]>;
             console.log(value);
             setDgDistribution(parsedValue);
+            setDgDistributionLoading(false);
         } catch (e) {
             console.error('Error calling Rust function', e);
         }
@@ -154,10 +166,12 @@ function App() {
 
     const fetchClEffectDistribution = async () => {
         try {
+            setClEffectDistributionLoading(true);
             const value = await invoke('get_cl_ef_dis');
             const parsedValue = value as Array<[number, number]>;
             console.log(value);
             setClEffectDistribution(parsedValue);
+            setClEffectDistributionLoading(false);
         } catch (e) {
             console.error('Error calling Rust function', e);
         }
@@ -197,8 +211,11 @@ function App() {
                     <Col className='d-flex justify-content-center w-100'>
                         <div className='w-100'>
                         <h2>Degree distribution</h2>
-                        {dgDistribution.length === 0 &&
+                        {(dgDistribution.length === 0 && !dgDistributionLoading) &&
                             <Button color="primary" onClick={fetchDgDistribution}>Show degree distribution</Button>
+                        }
+                        {dgDistributionLoading &&
+                            <Spinner color="primary" />
                         }
                         {dgDistribution.length > 0 &&
                             <BarChart data={dgDistribution} />
@@ -208,8 +225,11 @@ function App() {
                     <Col className='d-flex justify-content-center w-100'>
                         <div className='w-100'>
                         <h2>Clustering effect distribution</h2>
-                        {clEffectDistribution.length === 0 &&
+                        {(clEffectDistribution.length === 0 && !clEffectDistributionLoading) &&
                             <Button color="primary" onClick={fetchClEffectDistribution}>Show clustering effect distribution</Button>
+                        }
+                        {clEffectDistributionLoading &&
+                            <Spinner color="primary" />
                         }
                         {clEffectDistribution.length > 0 &&
                             <BarChart data={clEffectDistribution} />
