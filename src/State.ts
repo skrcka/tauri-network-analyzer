@@ -21,5 +21,9 @@ interface State {
     path: string;
 }
 
-export type {State, Metric, Metrics};
+interface SparseMatrix {
+    [key: number]: { [key: number]: number };
+}
+
+export type {State, Metric, Metrics, SparseMatrix};
 export {Status};

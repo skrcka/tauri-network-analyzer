@@ -27,9 +27,10 @@ pub fn dijkstra(
     graph: &HashMap<usize, HashMap<usize, usize>>,
     start: usize,
     end: usize,
-) -> Option<usize> {
+) -> Option<(Vec<usize>)> {
     let mut distances = HashMap::new();
     let mut heap = BinaryHeap::new();
+    let mut predecessors = HashMap::new();
 
     for &node in graph.keys() {
         distances.insert(node, usize::MAX);
@@ -42,7 +43,17 @@ pub fn dijkstra(
 
     while let Some(State { cost, position }) = heap.pop() {
         if position == end {
-            return Some(cost);
+            let mut path = vec![end];
+            let mut current = end;
+            while let Some(&predecessor) = predecessors.get(&current) {
+                path.push(predecessor);
+                current = predecessor;
+                if current == start {
+                    break;
+                }
+            }
+            path.reverse();
+            return Some(path);
         }
 
         if cost > *distances.get(&position).unwrap_or(&usize::MAX) {
@@ -51,14 +62,14 @@ pub fn dijkstra(
 
         if let Some(neighbors) = graph.get(&position) {
             for (&neighbor, &weight) in neighbors.iter() {
-                let next = State {
-                    cost: cost + weight,
-                    position: neighbor,
-                };
-
-                if next.cost < *distances.get(&neighbor).unwrap_or(&usize::MAX) {
-                    heap.push(next);
-                    distances.insert(neighbor, next.cost);
+                let next_cost = cost + weight;
+                if next_cost < *distances.get(&neighbor).unwrap_or(&usize::MAX) {
+                    heap.push(State {
+                        cost: next_cost,
+                        position: neighbor,
+                    });
+                    distances.insert(neighbor, next_cost);
+                    predecessors.insert(neighbor, position);
                 }
             }
         }

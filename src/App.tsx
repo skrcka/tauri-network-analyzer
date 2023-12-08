@@ -5,8 +5,9 @@ import { open } from '@tauri-apps/api/dialog';
 
 import 'bootstrap/dist/css/bootstrap.min.css'
 import { useState } from 'react';
-import { Metric, Metrics, State, Status } from './State';
+import { Metric, Metrics, SparseMatrix, State, Status } from './State';
 import BarChart from './Chart';
+import GraphVisualizer from './GraphVisualizer';
 
 
 function App() {
@@ -211,6 +212,37 @@ function App() {
         }
     }
 
+    const [
+        pathStatus,
+        setPathStatus,
+    ] = useState<Status>(Status.IDLE);
+
+    const [
+        graph,
+        setGraph,
+    ] = useState<SparseMatrix>({});
+
+    const [
+        path,
+        setPath,
+    ] = useState<Array<number>>([]);
+
+    const fetchPath = async () => {
+        try {
+            setPathStatus(Status.LOADING);
+            const value = await invoke('djikstra_path', {start: node1, end: node2});
+            console.log(value);
+            const parsedValue = value as Array<SparseMatrix | Array<number>>;
+            setGraph(parsedValue[0] as SparseMatrix);
+            setPath(parsedValue[1] as Array<number>);
+            setPathStatus(Status.DONE);
+        } catch (e) {
+            setPathStatus(Status.ERROR);
+            console.error('Error calling Rust function', e);
+            setDistanceStatus(Status.ERROR);
+        }
+    }
+
     return (
         <div className='app p-3'>
         <Container className='mt-3 mb-3 d-flex flex-grow-1 flex-column'>
@@ -281,6 +313,7 @@ function App() {
                             placeholder="Node 1"
                             onChange={(evnt)=>{
                                 setDistanceStatus(Status.IDLE)
+                                setPathStatus(Status.IDLE)
                                 setNode1(parseInt(evnt.target.value))
                             }}
                         />
@@ -293,6 +326,7 @@ function App() {
                             placeholder="Node 2"
                             onChange={(evnt)=>{
                                 setDistanceStatus(Status.IDLE)
+                                setPathStatus(Status.IDLE)
                                 setNode2(parseInt(evnt.target.value))
                             }}
                         />
@@ -311,6 +345,24 @@ function App() {
                         <Button color="primary" onClick={fetchDistance}>Calculate</Button>
                     )}
                     </Col>
+                    <Col className='d-flex justify-content-center w-100'>
+                    {pathStatus === Status.LOADING && (
+                        <Spinner color="primary" />
+                    )}
+                    {pathStatus === Status.ERROR && (
+                        <p>Error</p>
+                    )}
+                    {pathStatus === Status.IDLE && (
+                        <Button color="primary" onClick={fetchPath}>Visualize</Button>
+                    )}
+                    </Col>
+                </Row>
+                <Row className='w-100 mt-3'>
+                    <div>
+                    {pathStatus === Status.DONE && (
+                        <GraphVisualizer sparseMatrix={graph} path={path} />
+                    )}
+                    </div>
                 </Row>
                 </div>
             )}

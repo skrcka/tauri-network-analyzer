@@ -6,6 +6,7 @@ mod path;
 
 use lazy_static::lazy_static;
 use rayon_hash::HashMap;
+use std::collections::HashMap as HashMapSTD;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::sync::Mutex;
@@ -100,7 +101,47 @@ async fn get_edge_count() -> usize {
 async fn djikstra(start: usize, end: usize) -> Option<usize> {
     println!("Djikstra");
     let sparse_matrix = STATE.lock().unwrap();
-    path::dijkstra(&sparse_matrix, start, end)
+    let path = path::dijkstra(&sparse_matrix, start, end);
+    match path {
+        Some(path) => {
+            println!("Path: {:?}", path);
+            Some(path.len())
+        }
+        None => None,
+    }
+}
+
+#[tauri::command]
+async fn djikstra_path(
+    start: usize,
+    end: usize,
+) -> Option<(HashMapSTD<usize, HashMapSTD<usize, usize>>, Vec<usize>)> {
+    println!("Djikstra path");
+    let sparse_matrix = STATE.lock().unwrap();
+    let path = path::dijkstra(&sparse_matrix, start, end);
+    match path {
+        Some(path) => {
+            let mut nodes_to_send: HashMapSTD<usize, HashMapSTD<usize, usize>> = HashMapSTD::new();
+            for &node in &path {
+                if let Some(neighbors) = sparse_matrix.get(&node) {
+                    for &neighbor in neighbors.keys() {
+                        nodes_to_send
+                            .entry(node)
+                            .or_insert_with(HashMapSTD::new)
+                            .entry(neighbor)
+                            .or_insert(1);
+                        nodes_to_send
+                            .entry(neighbor)
+                            .or_insert_with(HashMapSTD::new)
+                            .entry(node)
+                            .or_insert(1);
+                    }
+                }
+            }
+            Some((nodes_to_send, path))
+        }
+        None => None,
+    }
 }
 
 fn main() {
@@ -117,6 +158,7 @@ fn main() {
             get_node_count,
             get_edge_count,
             djikstra,
+            djikstra_path,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
