@@ -32,7 +32,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: macos-arm64-app
-        path: src-tauri/target/release
+        path: src-tauri/target/aarch64-apple-darwin
 
   build-macos-x64:
     name: Build on macOS (x64)
@@ -60,7 +60,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: macos-x64-app
-        path: src-tauri/target/release
+        path: src-tauri/target/x86_64-apple-darwin
 
   build-windows:
     name: Build on Windows (x64)
@@ -88,4 +88,4 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: windows-app
-        path: src-tauri/target/release
+        path: src-tauri/target/x86_64-pc-windows-msvc
