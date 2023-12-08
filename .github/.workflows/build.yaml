@@ -1,0 +1,48 @@
+name: Build Tauri App
+
+on: [push, pull_request]
+
+jobs:
+  build-macos:
+    name: Build on macOS (ARM64)
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        node-version: [18.15]
+
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v2
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Install dependencies
+      run: yarn install
+
+    - name: Build Tauri app for macOS ARM64
+      run: yarn tauri build --target aarch64-apple-darwin
+
+  build-windows:
+    name: Build on Windows (x64)
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        node-version: [18.15]
+
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v2
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Install dependencies
+      run: yarn install
+
+    - name: Build Tauri app for Windows x64
+      run: yarn tauri build --target x86_64-pc-windows-msvc
