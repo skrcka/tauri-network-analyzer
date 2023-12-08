@@ -1,4 +1,4 @@
-name: Build Tauri App
+name: Build Tauri Network Analyzer
 
 on: [push, pull_request]
 
@@ -28,6 +28,12 @@ jobs:
     - name: Build Tauri app for macOS ARM64
       run: yarn tauri build --target aarch64-apple-darwin
 
+    - name: Upload macOS ARM64 Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: macos-arm64-app
+        path: src-tauri/target/release/build
+
   build-macos-x64:
     name: Build on macOS (x64)
     runs-on: macos-latest
@@ -50,6 +56,12 @@ jobs:
     - name: Build Tauri app for macOS ARM64
       run: yarn tauri build --target x86_64-apple-darwin
 
+    - name: Upload macOS x64 Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: macos-x64-app
+        path: src-tauri/target/release/build
+
   build-windows:
     name: Build on Windows (x64)
     runs-on: windows-latest
@@ -71,3 +83,9 @@ jobs:
 
     - name: Build Tauri app for Windows x64
       run: yarn tauri build --target x86_64-pc-windows-msvc
+
+    - name: Upload Windows Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: windows-app
+        path: src-tauri/target/release/build
