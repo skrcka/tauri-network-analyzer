@@ -27,7 +27,7 @@ pub fn dijkstra(
     graph: &HashMap<usize, HashMap<usize, usize>>,
     start: usize,
     end: usize,
-) -> Option<(Vec<usize>)> {
+) -> Option<Vec<usize>> {
     let mut distances = HashMap::new();
     let mut heap = BinaryHeap::new();
     let mut predecessors = HashMap::new();

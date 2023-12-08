@@ -172,6 +172,7 @@ pub fn get_cl_ef_dis(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) -> V
     distribution_vec
 }
 
+#[allow(dead_code)]
 pub fn get_cl_ds(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) -> HashMap<usize, usize> {
     let start = std::time::Instant::now();
     let mut clustering_distribution: HashMap<usize, usize> = HashMap::new();
