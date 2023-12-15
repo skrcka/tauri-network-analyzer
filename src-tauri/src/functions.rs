@@ -136,7 +136,7 @@ fn get_cl_coef(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>, node: usiz
     triangles as f64 / triples as f64
 }
 
-fn get_avg_cl_coef(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) -> f64 {
+pub fn get_avg_cl_coef(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) -> f64 {
     let start = std::time::Instant::now();
     let sum: f64 = sparse_matrix
         .par_iter()
