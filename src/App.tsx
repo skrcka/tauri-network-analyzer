@@ -53,6 +53,12 @@ function App() {
             value: 0,
             fetchUrl: 'get_cl_ef',
         },
+        avg_cl_coef: {
+            name: 'Average clustering coefficient',
+            status: Status.IDLE,
+            value: 0,
+            fetchUrl: 'get_avg_cl_coef',
+        },
         avg_cm_nb: {
             name: 'Average common neighbours',
             status: Status.IDLE,
@@ -290,7 +296,7 @@ function App() {
                     </Col>
                     <Col className='d-flex justify-content-center w-100'>
                         <div className='w-100'>
-                        <h2>Clustering effect distribution</h2>
+                        <h2>Clustering coefficient distribution</h2>
                         {(clEffectDistribution.length === 0 && !clEffectDistributionLoading) &&
                             <Button color="primary" onClick={fetchClEffectDistribution}>Show clustering effect distribution</Button>
                         }

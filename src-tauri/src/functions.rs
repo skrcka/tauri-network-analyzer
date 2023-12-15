@@ -136,6 +136,22 @@ fn get_cl_coef(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>, node: usiz
     triangles as f64 / triples as f64
 }
 
+fn get_avg_cl_coef(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) -> f64 {
+    let start = std::time::Instant::now();
+    let sum: f64 = sparse_matrix
+        .par_iter()
+        .map(|(&node, _)| get_cl_coef(sparse_matrix, node))
+        .sum();
+    let avg_cl_coef = sum / sparse_matrix.len() as f64;
+    let end = std::time::Instant::now();
+    println!(
+        "Average clustering coefficient par: {} in {}",
+        avg_cl_coef,
+        (end - start).as_millis()
+    );
+    avg_cl_coef
+}
+
 pub fn get_cl_ef_dis(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) -> Vec<(usize, f64)> {
     let start = std::time::Instant::now();
 

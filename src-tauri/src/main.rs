@@ -62,6 +62,12 @@ async fn get_cl_ef() -> f64 {
 }
 
 #[tauri::command]
+async fn get_avg_cl_coef() -> f64 {
+    let sparse_matrix = STATE.lock().unwrap();
+    functions::get_avg_cl_coef(&sparse_matrix)
+}
+
+#[tauri::command]
 async fn get_avg_cm_nb() -> f64 {
     let sparse_matrix = STATE.lock().unwrap();
     functions::get_avg_cm_nb(&sparse_matrix)
@@ -151,6 +157,7 @@ fn main() {
             get_avg_dg,
             get_max_dg,
             get_cl_ef,
+            get_avg_cl_coef,
             get_avg_cm_nb,
             get_max_cm_ng,
             get_dg_dis,
