@@ -190,7 +190,9 @@ pub fn get_cl_coef_dis(
         "Clustering coefficient distribution par in {}",
         (end - start).as_millis()
     );
-    cl_coef_dis.into_iter().collect()
+    let mut cl_coef_dis_vec: Vec<(usize, usize)> = cl_coef_dis.into_iter().collect();
+    cl_coef_dis_vec.sort_by(|a, b| a.0.cmp(&b.0));
+    cl_coef_dis_vec
 }
 
 pub fn get_cl_ef_dis(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) -> Vec<(usize, f64)> {
