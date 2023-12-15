@@ -290,13 +290,13 @@ function App() {
                             <Spinner color="primary" />
                         }
                         {dgDistribution.length > 0 &&
-                            <BarChart data={dgDistribution} />
+                            <BarChart xLabel='Degree' yLabel='Count' data={dgDistribution} />
                         }
                         </div>
                     </Col>
                     <Col className='d-flex justify-content-center w-100'>
                         <div className='w-100'>
-                        <h2>Clustering coefficient distribution</h2>
+                        <h2>Clustering effect distribution</h2>
                         {(clEffectDistribution.length === 0 && !clEffectDistributionLoading) &&
                             <Button color="primary" onClick={fetchClEffectDistribution}>Show clustering effect distribution</Button>
                         }
@@ -304,7 +304,7 @@ function App() {
                             <Spinner color="primary" />
                         }
                         {clEffectDistribution.length > 0 &&
-                            <BarChart data={clEffectDistribution} />
+                            <BarChart xLabel='Degree' yLabel='Clustering effect' data={clEffectDistribution} />
                         }
                         </div>
                     </Col>

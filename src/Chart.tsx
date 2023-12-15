@@ -6,9 +6,11 @@ Chart.register(CategoryScale, LinearScale, BarController, BarElement);
 
 interface BarChartProps {
   data: [number, number][];
+  xLabel?: string;
+  yLabel?: string;
 }
 
-const BarChart: React.FC<BarChartProps> = ({ data }) => {
+const BarChart: React.FC<BarChartProps> = ({ data, xLabel, yLabel }) => {
   const chartRef = useRef<HTMLCanvasElement | null>(null);
   const chartInstanceRef = useRef<Chart | null>(null);
 
@@ -41,14 +43,14 @@ const BarChart: React.FC<BarChartProps> = ({ data }) => {
             type: 'category',
             title: {
               display: true,
-              text: 'Categories',
+              text: xLabel ?? 'Categories',
             },
           },
           y: {
             beginAtZero: true,
             title: {
               display: true,
-              text: 'Values',
+              text: yLabel ?? 'Values',
             },
           },
         },
