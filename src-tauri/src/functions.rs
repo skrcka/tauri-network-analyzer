@@ -152,6 +152,47 @@ pub fn get_avg_cl_coef(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) ->
     avg_cl_coef
 }
 
+pub fn get_all_cl_coef(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) -> Vec<f64> {
+    let start = std::time::Instant::now();
+    let cl_coefs: Vec<f64> = sparse_matrix
+        .par_iter()
+        .map(|(&node, _)| get_cl_coef(sparse_matrix, node))
+        .collect();
+    let end = std::time::Instant::now();
+    println!(
+        "All clustering coefficients par in {}",
+        (end - start).as_millis()
+    );
+    cl_coefs
+}
+
+pub fn get_cl_coef_dis(
+    sparse_matrix: &HashMap<usize, HashMap<usize, usize>>,
+    bins: u32,
+) -> Vec<(usize, usize)> {
+    let start = std::time::Instant::now();
+    let mut coeficients: Vec<f64> = sparse_matrix
+        .par_iter()
+        .map(|(&node, _)| get_cl_coef(sparse_matrix, node))
+        .collect();
+    coeficients.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
+    let max = coeficients[coeficients.len() - 1];
+    let min = coeficients[0];
+    println!("Max: {}, Min: {}", max, min);
+    let bin_size = (max - min) / bins as f64;
+    let mut cl_coef_dis: HashMap<usize, usize> = HashMap::new();
+    for coef in coeficients {
+        let bin = ((coef - min) / bin_size) as usize;
+        cl_coef_dis.entry(bin).and_modify(|e| *e += 1).or_insert(1);
+    }
+    let end = std::time::Instant::now();
+    println!(
+        "Clustering coefficient distribution par in {}",
+        (end - start).as_millis()
+    );
+    cl_coef_dis.into_iter().collect()
+}
+
 pub fn get_cl_ef_dis(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) -> Vec<(usize, f64)> {
     let start = std::time::Instant::now();
 

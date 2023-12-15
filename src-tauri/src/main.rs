@@ -92,6 +92,18 @@ async fn get_cl_ef_dis() -> Vec<(usize, f64)> {
 }
 
 #[tauri::command]
+async fn get_all_cl_coef() -> Vec<f64> {
+    let sparse_matrix = STATE.lock().unwrap();
+    functions::get_all_cl_coef(&sparse_matrix)
+}
+
+#[tauri::command]
+async fn get_cl_coef_dis(bins: u32) -> Vec<(usize, usize)> {
+    let sparse_matrix = STATE.lock().unwrap();
+    functions::get_cl_coef_dis(&sparse_matrix, bins)
+}
+
+#[tauri::command]
 async fn get_node_count() -> usize {
     let sparse_matrix = STATE.lock().unwrap();
     functions::get_node_count(&sparse_matrix)
@@ -162,6 +174,8 @@ fn main() {
             get_max_cm_ng,
             get_dg_dis,
             get_cl_ef_dis,
+            get_all_cl_coef,
+            get_cl_coef_dis,
             get_node_count,
             get_edge_count,
             djikstra,

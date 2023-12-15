@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { Metric, Metrics, SparseMatrix, State, Status } from './State';
 import BarChart from './Chart';
 import GraphVisualizer from './GraphVisualizer';
+import Histogram from './Histogram';
 
 
 function App() {
@@ -92,6 +93,21 @@ function App() {
         clEffectDistribution,
         setClEffectDistribution,
     ] = useState<Array<[number, number]>>([]);
+
+    const [
+        clCoefficientLoading,
+        setCoefficientLoading,
+    ] = useState<boolean>(false);
+
+    const [
+        clCoefficientDistribution,
+        setCoefficientDistribution,
+    ] = useState<Array<[number, number]>>([]);
+
+    const [
+        clCoefficientDistributionBins,
+        setCoefficientDistributionBins,
+    ] = useState<number>(0);
 
     async function load_dataset(path: string) {
         setState({
@@ -179,6 +195,19 @@ function App() {
             console.log(value);
             setClEffectDistribution(parsedValue);
             setClEffectDistributionLoading(false);
+        } catch (e) {
+            console.error('Error calling Rust function', e);
+        }
+    }
+
+    const fetchClCoefficientDistribution = async () => {
+        try {
+            setCoefficientLoading(true);
+            const value = await invoke('get_cl_coef_dis', {bins: clCoefficientDistributionBins});
+            const parsedValue = value as Array<[number, number]>;
+            console.log(value);
+            setCoefficientDistribution(parsedValue);
+            setCoefficientLoading(false);
         } catch (e) {
             console.error('Error calling Rust function', e);
         }
@@ -305,6 +334,35 @@ function App() {
                         }
                         {clEffectDistribution.length > 0 &&
                             <BarChart xLabel='Degree' yLabel='Clustering effect' data={clEffectDistribution} />
+                        }
+                        </div>
+                    </Col>
+                </Row>
+                <Row className='w-100 mt-3'>
+                    <Col className='d-flex justify-content-center w-100'>
+                    <div className='w-100'>
+                        <h2>Clustering coefficient distribution</h2>
+                        {(clCoefficientDistribution.length === 0 && !clCoefficientLoading) &&
+                            <div>
+                                <Input
+                                    type="number"
+                                    name="bins"
+                                    id="bins"
+                                    placeholder="Bins"
+                                    className='d-inline-block me-3'
+                                    style={{width: '10rem'}}
+                                    onChange={(evnt)=>{
+                                        setCoefficientDistributionBins(parseInt(evnt.target.value))
+                                    }}
+                                />
+                                <Button color="primary" onClick={fetchClCoefficientDistribution}>Show clustering effect distribution</Button>
+                            </div>
+                        }
+                        {clCoefficientLoading &&
+                            <Spinner color="primary" />
+                        }
+                        {clCoefficientDistribution.length > 0 &&
+                            <BarChart xLabel='Clustering coefficient' yLabel='Count' data={clCoefficientDistribution} />
                         }
                         </div>
                     </Col>
