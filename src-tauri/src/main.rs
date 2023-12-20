@@ -213,6 +213,12 @@ async fn simulate_influnce_spread(
     (nodes_to_send, influnced_nodes)
 }
 
+#[tauri::command]
+async fn get_best_starting_nodes(n: u32) -> Vec<usize> {
+    let sparse_matrix = STATE.lock().unwrap();
+    influence::get_best_starting_nodes(&sparse_matrix, n)
+}
+
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
@@ -232,6 +238,7 @@ fn main() {
             djikstra,
             djikstra_path,
             simulate_influnce_spread,
+            get_best_starting_nodes,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

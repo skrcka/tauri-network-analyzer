@@ -36,3 +36,33 @@ pub fn simulate_influnce_spread(
     println!("influence history: {:?}", influence_history);
     influence_history
 }
+
+pub fn get_best_starting_nodes(
+    sparse_matrix: &HashMap<usize, HashMap<usize, usize>>,
+    n: u32,
+) -> Vec<usize> {
+    let mut degrees: Vec<(usize, usize)> = sparse_matrix
+        .iter()
+        .map(|(&node, neighbors)| (node, neighbors.len()))
+        .collect();
+
+    degrees.sort_unstable_by(|a, b| b.1.cmp(&a.1));
+
+    let mut selected_nodes = Vec::new();
+    let mut selected_count = 0;
+
+    for (node, _) in degrees {
+        if selected_nodes
+            .iter()
+            .all(|&selected_node| !sparse_matrix[&selected_node].contains_key(&node))
+        {
+            selected_nodes.push(node);
+            selected_count += 1;
+
+            if selected_count == n {
+                break;
+            }
+        }
+    }
+    selected_nodes
+}

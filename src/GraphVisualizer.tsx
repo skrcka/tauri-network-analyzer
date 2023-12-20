@@ -24,8 +24,8 @@ const GraphVisualizer: React.FC<GraphVisualizerProps> = ({ sparseMatrix, path })
             const svg = d3.select(d3Container.current);
             svg.selectAll("*").remove(); // Clear svg content
 
-            const width = 800;  // Adjust as needed
-            const height = 600; // Adjust as needed
+            const width = 1200;  // Adjust as needed
+            const height = 800; // Adjust as needed
 
             // Convert sparse matrix to nodes and links
             const nodes: Node[] = Object.keys(sparseMatrix).map(id => ({ id }));

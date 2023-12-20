@@ -279,6 +279,35 @@ function App() {
     }
 
     const [
+        bestStartNodeCount,
+        setBestStartNodeCount,
+    ] = useState<number>(5)
+
+    const [
+        bestStartNodeCountStatus,
+        setBestStartNodeCountStatus,
+    ] = useState<Status>(Status.IDLE)
+
+    const [
+        bestStartNodes,
+        setBestStartNodes,
+    ] = useState<number[]>([])
+
+    const fetchInfluenceStart = async () => {
+        try {
+            setBestStartNodeCountStatus(Status.LOADING);
+            const value = await invoke('get_best_starting_nodes', {n: bestStartNodeCount});
+            console.log(value);
+            const parsedValue = value as Array<number>;
+            setBestStartNodes(parsedValue);
+            setBestStartNodeCountStatus(Status.DONE);
+        } catch (e) {
+            setBestStartNodeCountStatus(Status.ERROR);
+            console.error('Error calling Rust function', e);
+        }
+    }
+
+    const [
         startNode,
         setStartNode,
     ] = useState<number[] | null>(null)
@@ -460,6 +489,35 @@ function App() {
                 </Row>
                 <Row className='w-100 mt-3'>
                     <h2>Simulate influence spread</h2>
+                    <Col className='d-flex justify-content-center w-100'>
+                        <Input
+                            type='number'
+                            defaultValue={bestStartNodeCount}
+                            onChange={(event) => {
+                                setBestStartNodeCount(Number(event.target.value));
+                            }}
+                            placeholder='Start node count'
+                        />
+                    </Col>
+                    <Col className='d-flex justify-content-center w-100'>
+                        <Button
+                            onClick={fetchInfluenceStart}
+                        >
+                            Get starting point for n nums
+                        </Button>
+                    </Col>
+                    <Col className='w-100 mt-3'>
+                        <div>
+                        {bestStartNodeCountStatus === Status.LOADING &&
+                            <Spinner color="primary" />
+                        }
+                        {bestStartNodeCountStatus === Status.DONE &&
+                            bestStartNodes.join(',')
+                        }
+                        </div>
+                    </Col>
+                </Row>
+                <Row className='w-100 mt-3'>
                     <Col className='d-flex justify-content-center w-100'>
                         <Input
                             type='number'
