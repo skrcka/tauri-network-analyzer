@@ -1,6 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod community_detection;
 mod functions;
 mod influence;
 mod path;
@@ -219,6 +220,14 @@ async fn get_best_starting_nodes(n: u32) -> Vec<usize> {
     influence::get_best_starting_nodes(&sparse_matrix, n)
 }
 
+#[tauri::command]
+async fn louvain_community_detection() -> HashMapSTD<usize, usize> {
+    let sparse_matrix = STATE.lock().unwrap();
+    HashMapSTD::from_iter(community_detection::louvain_community_detection(
+        &sparse_matrix,
+    ))
+}
+
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
@@ -239,6 +248,7 @@ fn main() {
             djikstra_path,
             simulate_influnce_spread,
             get_best_starting_nodes,
+            louvain_community_detection,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

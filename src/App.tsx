@@ -337,6 +337,30 @@ function App() {
         }
     }
 
+    const [
+        communities,
+        setCommunities,
+    ] = useState<SparseMatrix>({})
+
+    const [
+        communitiesStatus,
+        setCommunitiesStatus,
+    ] = useState<Status>(Status.IDLE)
+
+    const fetchCommunities = async () => {
+        try {
+            setCommunitiesStatus(Status.LOADING);
+            const value = await invoke('louvain_community_detection', {initial_nodes: [startNode]});
+            console.log(value);
+            const parsedValue = value as SparseMatrix;
+            setCommunities(parsedValue);
+            setCommunitiesStatus(Status.DONE);
+        } catch (e) {
+            setCommunitiesStatus(Status.ERROR);
+            console.error('Error calling Rust function', e);
+        }
+    }
+
     return (
         <div className='app p-3'>
         <Container className='mt-3 mb-3 d-flex flex-grow-1 flex-column'>
@@ -547,6 +571,26 @@ function App() {
                         }
                         {influenceStatus === Status.DONE &&
                             influence.length
+                        }
+                        </div>
+                    </Col>
+                </Row>
+                <Row className='w-100 mt-3'>
+                    <h2>Community detection</h2>
+                    <Col className='w-100 mt-3'>
+                        <Button
+                            onClick={fetchCommunities}
+                        >
+                            Get community count
+                        </Button>
+                    </Col>
+                    <Col className='w-100 mt-3'>
+                    <div>
+                        {communitiesStatus === Status.LOADING &&
+                            <Spinner color="primary" />
+                        }
+                        {communitiesStatus === Status.DONE &&
+                            Object.keys(communities).length
                         }
                         </div>
                     </Col>
