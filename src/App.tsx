@@ -278,6 +278,36 @@ function App() {
         }
     }
 
+    const [
+        startNode,
+        setStartNode,
+    ] = useState<number[] | null>(null)
+
+    const [
+        influence,
+        setInfluence,
+    ] = useState<number[]>([])
+
+    const [
+        influenceStatus,
+        setInfluenceStatus,
+    ] = useState<Status>(Status.IDLE)
+
+    const fetchInfluence = async () => {
+        try {
+            setInfluenceStatus(Status.LOADING);
+            const value = await invoke('simulate_influnce_spread', {initial_nodes: [startNode]});
+            console.log(value);
+            const parsedValue = value as Array<SparseMatrix | Array<number>>;
+            //setGraph(parsedValue[0] as SparseMatrix);
+            setInfluence(parsedValue[1] as Array<number>);
+            setInfluenceStatus(Status.DONE);
+        } catch (e) {
+            setInfluenceStatus(Status.ERROR);
+            console.error('Error calling Rust function', e);
+        }
+    }
+
     return (
         <div className='app p-3'>
         <Container className='mt-3 mb-3 d-flex flex-grow-1 flex-column'>
@@ -427,6 +457,41 @@ function App() {
                         <GraphVisualizer sparseMatrix={graph} path={path} />
                     )}
                     </div>
+                </Row>
+                <Row className='w-100 mt-3'>
+                    <h2>Simulate influence spread</h2>
+                    <Col className='d-flex justify-content-center w-100'>
+                        <Input
+                            type='number'
+                            onChange={(event) => {
+                                if(event.target.value === ''){
+                                    setStartNode(null);
+                                }
+                                else{
+                                    setStartNode(event.target.value.split(',').map(n => Number(n)))
+                                }
+                            }}
+                            placeholder='Comma separated or leave blank for random'
+                        />
+
+                    </Col>
+                    <Col className='w-100 mt-3'>
+                        <Button
+                            onClick={fetchInfluence}
+                        >
+                            Get influence
+                        </Button>
+                    </Col>
+                    <Col className='w-100 mt-3'>
+                        <div>
+                        {influenceStatus === Status.LOADING &&
+                            <Spinner color="primary" />
+                        }
+                        {influenceStatus === Status.DONE &&
+                            influence.length
+                        }
+                        </div>
+                    </Col>
                 </Row>
                 </div>
             )}
